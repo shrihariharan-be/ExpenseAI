@@ -249,6 +249,7 @@ class MainActivity : ComponentActivity() {
             isConnecting.set(false)
         }
     }
+}
 
     private fun setupErrorListeners() {
         btnRetry.setOnClickListener {
