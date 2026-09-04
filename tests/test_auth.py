@@ -1,4 +1,5 @@
 import pytest
+from config import Config
 
 def test_registration_and_login(client, db_service):
     # 1. Reject weak password
@@ -131,8 +132,8 @@ def test_admin_route_access_restriction(client, db_service):
     # 2. Administrator CAN access /admin
     client.get('/logout')
     admin_login = client.post('/login', data={
-        'email': 'admin@expenseai.com',
-        'password': 'Admin@123'
+        'email': Config.ADMIN_EMAIL,
+        'password': Config.ADMIN_PASSWORD
     }, follow_redirects=True)
     assert admin_login.status_code == 200
 

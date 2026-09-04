@@ -110,20 +110,20 @@ Evaluates financial stability across 5 weighted dimensions:
 
 ---
 
-## 🔑 Pre-Configured Credentials
+## 🔑 Authentication & Environment Configuration
 
 > [!NOTE]
-> For security best practices, administrator credentials are never shown on public application screens. They are configured via environment variables with defaults:
+> In production, administrator credentials are configured strictly via environment variables (`ADMIN_EMAIL` and `ADMIN_PASSWORD`) and are never hardcoded or committed to version control.
 
-| Account Type | Email Address | Password | Role | Purpose |
-| :--- | :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@expenseai.com` | `Admin@123` | `admin` | System KPIs, User Management, Admin Panel |
-| **Demo User** | `demo@example.com` | `Demo@123` | `user` | Pre-seeded with 39 multi-month sample transactions |
+| Account Type | Access Method | Role | Purpose |
+| :--- | :--- | :--- | :--- |
+| **System Admin** | Configured via `ADMIN_EMAIL` & `ADMIN_PASSWORD` env vars | `admin` | System KPIs, User Management, Admin Panel |
+| **Demo User** | `demo@example.com` / `Demo@123` (Development / Demo sandbox) | `user` | Pre-seeded with 39 multi-month sample transactions |
 
-To customize admin credentials via environment variables:
+To configure administrator credentials in production or local environments:
 ```bash
-export ADMIN_EMAIL="your-admin@example.com"
-export ADMIN_PASSWORD="YourStrongPassword@123"
+export ADMIN_EMAIL="your-admin-email@example.com"
+export ADMIN_PASSWORD="replace-with-a-strong-password"
 ```
 
 ---

@@ -5,7 +5,15 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     BASE_DIR = BASE_DIR
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'expenseai-production-secret-key-2026')
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'development').lower()
+
+    # Secret Key: Enforce environment variable in production
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        if FLASK_ENV == 'production':
+            raise RuntimeError("CRITICAL: SECRET_KEY environment variable must be set in production mode.")
+        SECRET_KEY = 'dev-secret-key-change-in-production'
+
     DATABASE_DIR = os.path.join(BASE_DIR, 'database')
     DATABASE_PATH = os.path.join(DATABASE_DIR, 'expense_tracker.db')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -13,10 +21,22 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max upload
     CURRENCY_SYMBOL = '₹'
     
-    # Administrator Configuration from Environment
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@expenseai.com').strip().lower()
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Admin@123')
+    # Administrator Configuration: Enforce environment variables in production
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
     ADMIN_NAME = os.environ.get('ADMIN_NAME', 'System Administrator')
+
+    if not ADMIN_EMAIL:
+        if FLASK_ENV == 'production':
+            raise RuntimeError("CRITICAL: ADMIN_EMAIL environment variable must be set in production mode.")
+        ADMIN_EMAIL = 'admin@example.com'
+
+    if not ADMIN_PASSWORD:
+        if FLASK_ENV == 'production':
+            raise RuntimeError("CRITICAL: ADMIN_PASSWORD environment variable must be set in production mode.")
+        ADMIN_PASSWORD = 'DevAdminPassword123!'
+
+    ADMIN_EMAIL = ADMIN_EMAIL.strip().lower()
 
     # Session & Cookie Security
     PERMANENT_SESSION_LIFETIME = timedelta(days=30)
