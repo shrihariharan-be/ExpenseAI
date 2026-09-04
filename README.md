@@ -1,6 +1,6 @@
 # ExpenseAI — Personal Finance & AI-Powered Financial Analytics System
 
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![Flask 3.1](https://img.shields.io/badge/framework-Flask%203.1-black.svg)](https://palletsprojects.com/p/flask/)
 [![Scikit-Learn](https://img.shields.io/badge/AI%2FML-Scikit--Learn-orange.svg)](https://scikit-learn.org/)
 [![Pandas & NumPy](https://img.shields.io/badge/analytics-Pandas%20%7C%20NumPy-blueviolet.svg)](https://pandas.pydata.org/)
@@ -139,7 +139,7 @@ expense-ai/
 ├── LICENSE                    # MIT License
 ├── Procfile                   # Cloud PaaS entrypoint (Render / Railway / Heroku)
 ├── render.yaml                # Render Blueprint infrastructure configuration
-├── runtime.txt                # Target Python runtime (3.13.4)
+├── runtime.txt                # Target Python runtime (3.11.11)
 ├── Dockerfile                 # Production multi-worker Gunicorn container
 ├── docker-compose.yml         # Container orchestration with volume mounts
 ├── .dockerignore              # Docker build exclusions
@@ -221,9 +221,9 @@ expense-ai/
 
 ---
 
-## 🧪 Running Automated Tests
+### 🧪 Running Automated Tests
 
-Run the complete 25-test automated test suite using `pytest`:
+Run the complete 41-test automated test suite using `pytest`:
 
 ```bash
 pytest -v
@@ -231,24 +231,49 @@ pytest -v
 
 Expected Output:
 ```text
-tests/test_admin.py::test_admin_role_access PASSED                       [ 36%]
-tests/test_admin.py::test_admin_system_stats_and_user_management PASSED  [ 40%]
-tests/test_ai.py::test_ai_predictive_engine PASSED                       [ 44%]
-tests/test_analytics.py::test_analytics_calculations PASSED              [ 48%]
-tests/test_auth.py::test_registration_and_login PASSED                   [ 52%]
-tests/test_auth.py::test_duplicate_user_validation PASSED                [ 56%]
-tests/test_auth.py::test_forgot_password_flow PASSED                     [ 60%]
-tests/test_budget.py::test_budget_management PASSED                      [ 64%]
-tests/test_database.py::test_database_seeding_and_crud PASSED            [ 68%]
-tests/test_database.py::test_user_data_isolation PASSED                  [ 72%]
-tests/test_database.py::test_input_validation PASSED                     [ 76%]
-tests/test_routes.py::test_web_routes PASSED                             [ 80%]
-tests/test_routes.py::test_csv_import_route PASSED                       [ 84%]
-tests/test_routes.py::test_pdf_export_route PASSED                       [ 88%]
+test_app.py::TestExpenseTracker::test_01_database_and_seed_data PASSED   [  2%]
+test_app.py::TestExpenseTracker::test_02_crud_operations PASSED          [  4%]
+test_app.py::TestExpenseTracker::test_03_transaction_validation PASSED   [  7%]
+test_app.py::TestExpenseTracker::test_04_filtering_and_search PASSED     [  9%]
+test_app.py::TestExpenseTracker::test_05_pandas_and_numpy_analytics PASSED [ 12%]
+test_app.py::TestExpenseTracker::test_06_flask_web_routes PASSED         [ 14%]
+test_app.py::TestExpenseTracker::test_07_api_json_endpoints PASSED       [ 17%]
+test_app.py::TestExpenseTracker::test_08_empty_database_handling PASSED  [ 19%]
+tests/test_admin.py::test_admin_role_access PASSED                       [ 21%]
+tests/test_admin.py::test_admin_system_stats_and_user_management PASSED  [ 24%]
+tests/test_ai.py::test_ai_predictive_engine PASSED                       [ 26%]
+tests/test_analytics.py::test_analytics_calculations PASSED              [ 29%]
+tests/test_apk_audit.py::test_api_health_endpoint PASSED                 [ 31%]
+tests/test_apk_audit.py::test_release_apk_exists_and_signed PASSED       [ 34%]
+tests/test_apk_audit.py::test_release_apk_binary_free_of_developer_ips PASSED [ 36%]
+tests/test_apk_audit.py::test_network_security_config_enforces_https PASSED [ 39%]
+tests/test_auth.py::test_registration_and_login PASSED                   [ 41%]
+tests/test_auth.py::test_duplicate_user_validation PASSED                [ 43%]
+tests/test_auth.py::test_forgot_password_flow PASSED                     [ 46%]
+tests/test_auth.py::test_auth_status_and_root_navigation PASSED          [ 48%]
+tests/test_auth.py::test_direct_protected_url_access_denied_when_logged_out PASSED [ 51%]
+tests/test_auth.py::test_admin_route_access_restriction PASSED           [ 53%]
+tests/test_auth.py::test_logout_invalidates_session_and_sets_cache_headers PASSED [ 56%]
+tests/test_budget.py::test_budget_management PASSED                      [ 58%]
+tests/test_database.py::test_database_seeding_and_crud PASSED            [ 60%]
+tests/test_database.py::test_user_data_isolation PASSED                  [ 63%]
+tests/test_database.py::test_input_validation PASSED                     [ 65%]
+tests/test_production.py::test_pwa_manifest_and_icons PASSED             [ 68%]
+tests/test_production.py::test_pwa_service_worker_and_offline PASSED     [ 70%]
+tests/test_production.py::test_production_error_handlers PASSED          [ 73%]
+tests/test_production.py::test_sqlite_indexing_and_wal PASSED            [ 75%]
+tests/test_production.py::test_ai_insufficient_data_handling PASSED      [ 78%]
+tests/test_production.py::test_csv_duplicate_prevention PASSED           [ 80%]
+tests/test_production.py::test_apk_download_endpoint PASSED              [ 82%]
+tests/test_routes.py::test_web_routes PASSED                             [ 85%]
+tests/test_routes.py::test_csv_import_route PASSED                       [ 87%]
+tests/test_routes.py::test_pdf_export_route PASSED                       [ 90%]
 tests/test_routes.py::test_rest_apis PASSED                              [ 92%]
-tests/test_routes.py::test_help_profile_and_onboarding PASSED            [ 96%]
-tests/test_routes.py::test_transaction_ownership_authorization PASSED    [100%]
-============================= 25 passed in 1.84s ==============================
+tests/test_routes.py::test_help_profile_and_onboarding PASSED            [ 95%]
+tests/test_routes.py::test_transaction_ownership_authorization PASSED    [ 97%]
+tests/test_routes.py::test_api_authentication_and_financial_data_isolation PASSED [100%]
+
+============================= 41 passed in 3.64s ==============================
 ```
 
 ---
