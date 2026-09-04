@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - ExpenseAI{% endblock %}
+{% block header_title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pt-2">
+  <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+    <div class="card shadow-md border-0">
+      <div class="card-header bg-white border-0 text-center pt-4 pb-0">
+        <div class="d-inline-flex p-3 rounded-circle bg-primary-subtle text-primary mb-2">
+          <i class="fa-solid fa-user-plus fs-3"></i>
+        </div>
+        <h3 class="fw-bold mb-1">Create Account</h3>
+        <p class="text-muted small">Join ExpenseAI to manage your personal finances with AI</p>
+      </div>
+
+      <div class="card-body p-4 pt-2">
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm" novalidate>
+          <!-- Full Name -->
+          <div class="mb-3">
+            <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-regular fa-user text-muted"></i></span>
+              <input type="text" class="form-control" id="full_name" name="full_name" placeholder="e.g. John Doe" value="{{ form_data.full_name if form_data else '' }}" required autofocus>
+            </div>
+          </div>
+
+          <!-- Email Address -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-regular fa-envelope text-muted"></i></span>
+              <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" value="{{ form_data.email if form_data else '' }}" required>
+            </div>
+            <div class="form-text">Your email is used to securely sign in.</div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-solid fa-key text-muted"></i></span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Create strong password" required>
+            </div>
+
+            <!-- Real-time Password Strength Meter -->
+            <div class="mt-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted">Password Strength:</span>
+                <span class="small fw-bold" id="strengthText">Weak</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-danger" id="strengthBar" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+
+            <!-- Password Requirements Checklist -->
+            <div class="p-2 bg-light rounded border mt-2 small text-muted">
+              <div id="req-len"><i class="fa-regular fa-circle me-1 text-muted"></i> At least 8 characters</div>
+              <div id="req-upper"><i class="fa-regular fa-circle me-1 text-muted"></i> One uppercase letter (A-Z)</div>
+              <div id="req-lower"><i class="fa-regular fa-circle me-1 text-muted"></i> One lowercase letter (a-z)</div>
+              <div id="req-num"><i class="fa-regular fa-circle me-1 text-muted"></i> One number (0-9)</div>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="mb-4">
+            <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-solid fa-shield-halved text-muted"></i></span>
+              <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+            </div>
+            <div id="matchNotice" class="small mt-1 text-danger d-none">Passwords do not match.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="submitBtn">
+            <i class="fa-solid fa-user-check me-2"></i> Register Account
+          </button>
+        </form>
+
+        <div class="text-center mt-3 small text-muted">
+          Already have an account?
+          <a href="{{ url_for('login') }}" class="text-primary fw-semibold text-decoration-none">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const pwdInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const matchNotice = document.getElementById('matchNotice');
+
+    const reqLen = document.getElementById('req-len');
+    const reqUpper = document.getElementById('req-upper');
+    const reqLower = document.getElementById('req-lower');
+    const reqNum = document.getElementById('req-num');
+
+    function updateItem(el, passed) {
+      if (passed) {
+        el.className = 'text-success fw-semibold';
+        el.innerHTML = '<i class="fa-solid fa-circle-check me-1 text-success"></i>' + el.textContent.trim();
+      } else {
+        el.className = 'text-muted';
+        el.innerHTML = '<i class="fa-regular fa-circle me-1 text-muted"></i>' + el.textContent.trim();
+      }
+    }
+
+    pwdInput.addEventListener('input', function () {
+      const val = pwdInput.value;
+      let score = 0;
+
+      const hasLen = val.length >= 8;
+      const hasUpper = /[A-Z]/.test(val);
+      const hasLower = /[a-z]/.test(val);
+      const hasNum = /[0-9]/.test(val);
+      const hasSpecial = /[^A-Za-z0-9]/.test(val);
+
+      updateItem(reqLen, hasLen);
+      updateItem(reqUpper, hasUpper);
+      updateItem(reqLower, hasLower);
+      updateItem(reqNum, hasNum);
+
+      if (hasLen) score += 25;
+      if (hasUpper) score += 25;
+      if (hasLower) score += 20;
+      if (hasNum) score += 20;
+      if (hasSpecial) score += 10;
+
+      if (score <= 45) {
+        strengthBar.style.width = '33%';
+        strengthBar.className = 'progress-bar bg-danger';
+        strengthText.textContent = 'Weak';
+        strengthText.className = 'small fw-bold text-danger';
+      } else if (score < 85) {
+        strengthBar.style.width = '66%';
+        strengthBar.className = 'progress-bar bg-warning';
+        strengthText.textContent = 'Medium';
+        strengthText.className = 'small fw-bold text-warning';
+      } else {
+        strengthBar.style.width = '100%';
+        strengthBar.className = 'progress-bar bg-success';
+        strengthText.textContent = 'Strong';
+        strengthText.className = 'small fw-bold text-success';
+      }
+
+      checkMatch();
+    });
+
+    confirmInput.addEventListener('input', checkMatch);
+
+    function checkMatch() {
+      if (confirmInput.value.length > 0 && confirmInput.value !== pwdInput.value) {
+        matchNotice.classList.remove('d-none');
+      } else {
+        matchNotice.classList.add('d-none');
+      }
+    }
+  });
+</script>
+{% endblock %}

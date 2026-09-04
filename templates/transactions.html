@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - Personal Expense Tracker{% endblock %}
+{% block header_title %}Transactions Management{% endblock %}
+
+{% block content %}
+<!-- Filter & Search Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-filter text-primary"></i>
+      <span>Search & Filter Transactions</span>
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('export_csv', search=filters.search, type=filters.type, category=filters.category, start_date=filters.start_date, end_date=filters.end_date) }}" class="btn btn-sm btn-outline-success">
+        <i class="fa-solid fa-file-csv me-1"></i> Export Filtered CSV
+      </a>
+      <a href="{{ url_for('add_transaction') }}" class="btn btn-sm btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Add Transaction
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('transactions') }}" id="filterForm">
+      <div class="row g-3">
+        <!-- Search -->
+        <div class="col-12 col-md-4">
+          <label for="search" class="form-label">Search Description / Category</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" class="form-control" id="search" name="search" placeholder="Search keywords..." value="{{ filters.search }}">
+          </div>
+        </div>
+
+        <!-- Type -->
+        <div class="col-12 col-sm-6 col-md-2">
+          <label for="typeFilter" class="form-label">Type</label>
+          <select class="form-select" id="typeFilter" name="type">
+            <option value="">All Types</option>
+            <option value="Income" {% if filters.type == 'Income' %}selected{% endif %}>Income</option>
+            <option value="Expense" {% if filters.type == 'Expense' %}selected{% endif %}>Expense</option>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div class="col-12 col-sm-6 col-md-2">
+          <label for="categoryFilter" class="form-label">Category</label>
+          <select class="form-select" id="categoryFilter" name="category">
+            <option value="">All Categories</option>
+            <optgroup label="Income Categories">
+              {% for cat in income_categories %}
+                <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Expense Categories">
+              {% for cat in expense_categories %}
+                <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Start Date -->
+        <div class="col-12 col-sm-6 col-md-2">
+          <label for="start_date" class="form-label">Start Date</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" value="{{ filters.start_date }}">
+        </div>
+
+        <!-- End Date -->
+        <div class="col-12 col-sm-6 col-md-2">
+          <label for="end_date" class="form-label">End Date</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" value="{{ filters.end_date }}">
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="col-12 d-flex justify-content-end gap-2 pt-2">
+          <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary px-3">
+            <i class="fa-solid fa-rotate-left me-1"></i> Clear Filters
+          </a>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="fa-solid fa-filter me-1"></i> Apply Filters
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Summary Badges for Filtered Results -->
+<div class="row g-3 mb-3">
+  <div class="col-12 col-sm-4">
+    <div class="p-3 bg-white border rounded d-flex align-items-center justify-content-between">
+      <span class="text-muted small fw-semibold">MATCHING RECORDS</span>
+      <span class="badge bg-primary fs-6">{{ total_count }}</span>
+    </div>
+  </div>
+  <div class="col-12 col-sm-4">
+    <div class="p-3 bg-white border rounded d-flex align-items-center justify-content-between">
+      <span class="text-muted small fw-semibold">FILTERED INCOME</span>
+      <span class="text-success fw-bold fs-6">₹{{ "{:,.2f}".format(filtered_summary.income) }}</span>
+    </div>
+  </div>
+  <div class="col-12 col-sm-4">
+    <div class="p-3 bg-white border rounded d-flex align-items-center justify-content-between">
+      <span class="text-muted small fw-semibold">FILTERED EXPENSES</span>
+      <span class="text-danger fw-bold fs-6">₹{{ "{:,.2f}".format(filtered_summary.expense) }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Transactions Table Card -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-table-list text-primary"></i>
+      <span>Transactions List</span>
+    </h2>
+    <span class="text-muted small">Showing {{ transactions|length }} of {{ total_count }} transactions</span>
+  </div>
+
+  <div class="card-body p-0">
+    <!-- Desktop & Tablet Table (Screens >= 768px) -->
+    <div class="table-responsive d-none d-md-block">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th class="text-end">Amount</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if transactions %}
+            {% for tx in transactions %}
+              <tr>
+                <td class="text-muted small">#{{ tx.id }}</td>
+                <td class="text-nowrap"><i class="fa-regular fa-calendar me-1 text-muted"></i>{{ tx.date }}</td>
+                <td>
+                  {% if tx.type == 'Income' %}
+                    <span class="badge-income"><i class="fa-solid fa-arrow-down"></i> Income</span>
+                  {% else %}
+                    <span class="badge-expense"><i class="fa-solid fa-arrow-up"></i> Expense</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge-category">{{ tx.category }}</span>
+                </td>
+                <td>{{ tx.description or '-' }}</td>
+                <td class="text-end text-nowrap">
+                  <span class="{{ 'amount-income' if tx.type == 'Income' else 'amount-expense' }}">
+                    {{ '+' if tx.type == 'Income' else '-' }}₹{{ "{:,.2f}".format(tx.amount) }}
+                  </span>
+                </td>
+                <td class="text-center text-nowrap">
+                  <div class="d-inline-flex gap-1">
+                    <a href="{{ url_for('edit_transaction', id=tx.id) }}" class="btn btn-outline-secondary btn-action" title="Edit">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    <button type="button" class="btn btn-outline-danger btn-action" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal" data-tx-id="{{ tx.id }}" data-tx-desc="{{ tx.description or tx.category }}" data-tx-amount="₹{{ "{:,.2f}".format(tx.amount) }}">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-magnifying-glass fs-1 mb-3 text-secondary d-block"></i>
+                <h5 class="fw-semibold">No Transactions Found</h5>
+                <p class="mb-3">Try adjusting your filters or search keyword, or add a new transaction.</p>
+                <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-secondary me-2">Clear Filters</a>
+                <a href="{{ url_for('add_transaction') }}" class="btn btn-sm btn-primary">Add Transaction</a>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card Stream (Phones < 768px) -->
+    <div class="d-md-none mobile-card-stream">
+      {% if transactions %}
+        {% for tx in transactions %}
+          <div class="mobile-tx-card">
+            <div class="mobile-tx-header">
+              <span class="badge-category">{{ tx.category }}</span>
+              <span class="{{ 'amount-income' if tx.type == 'Income' else 'amount-expense' }} fw-bold fs-6">
+                {{ '+' if tx.type == 'Income' else '-' }}₹{{ "{:,.2f}".format(tx.amount) }}
+              </span>
+            </div>
+            <div class="mobile-tx-body">
+              <div class="mobile-tx-desc">{{ tx.description or tx.category }}</div>
+            </div>
+            <div class="mobile-tx-footer">
+              <div>
+                <i class="fa-regular fa-calendar me-1"></i>{{ tx.date }} &bull; <span class="text-muted">#{{ tx.id }}</span>
+              </div>
+              <div class="d-flex gap-1">
+                <a href="{{ url_for('edit_transaction', id=tx.id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Edit">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal" data-tx-id="{{ tx.id }}" data-tx-desc="{{ tx.description or tx.category }}" data-tx-amount="₹{{ "{:,.2f}".format(tx.amount) }}">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state py-4 text-center">
+          <i class="fa-solid fa-receipt empty-state-icon"></i>
+          <h6 class="fw-semibold">No Transactions Found</h6>
+          <p class="small text-muted">Try clearing your filters or add a new transaction.</p>
+          <a href="{{ url_for('add_transaction') }}" class="btn btn-sm btn-primary mt-2">Add Transaction</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger" id="deleteModalLabel">
+          <i class="fa-solid fa-triangle-exclamation me-1"></i> Confirm Deletion
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this transaction?</p>
+        <div class="p-3 bg-light rounded border">
+          <div><strong>ID:</strong> <span id="modalTxId"></span></div>
+          <div><strong>Details:</strong> <span id="modalTxDesc"></span></div>
+          <div><strong>Amount:</strong> <span id="modalTxAmount" class="fw-bold"></span></div>
+        </div>
+        <p class="text-danger small mt-2 mb-0">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST" action="">
+          <button type="submit" class="btn btn-danger">Delete Permanently</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+      deleteModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const txId = button.getAttribute('data-tx-id');
+        const txDesc = button.getAttribute('data-tx-desc');
+        const txAmount = button.getAttribute('data-tx-amount');
+
+        document.getElementById('modalTxId').textContent = '#' + txId;
+        document.getElementById('modalTxDesc').textContent = txDesc;
+        document.getElementById('modalTxAmount').textContent = txAmount;
+
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = "{{ url_for('delete_transaction', id=0) }}".replace('/0', '/' + txId);
+      });
+    }
+  });
+</script>
+{% endblock %}

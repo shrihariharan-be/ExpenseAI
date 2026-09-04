@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Guide - ExpenseAI{% endblock %}
+{% block header_title %}Help & User Guide{% endblock %}
+
+{% block content %}
+<!-- Welcome Header Banner -->
+<div class="card mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+  <div class="card-body p-4 text-center text-md-start">
+    <div class="row align-items-center g-3">
+      <div class="col-12 col-md-8">
+        <div class="d-flex align-items-center gap-3 justify-content-center justify-content-md-start mb-2">
+          <span class="badge bg-primary px-3 py-1.5 fs-6"><i class="fa-solid fa-graduation-cap me-1"></i> User Handbook</span>
+          <span class="text-white-50 small">Quick-start Walkthrough</span>
+        </div>
+        <h2 class="fw-bold text-white mb-1">How to Use ExpenseAI</h2>
+        <p class="text-white-50 mb-0">
+          Your complete guide to managing income, expenses, monthly category budgets, and AI-driven financial intelligence.
+        </p>
+      </div>
+      <div class="col-12 col-md-4 text-center text-md-end">
+        <a href="{{ url_for('add_transaction') }}" class="btn btn-primary px-4 py-2 fw-semibold">
+          <i class="fa-solid fa-plus me-1"></i> Add Transaction Now
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 Visual Feature Guide Cards -->
+<div class="row g-4 mb-4">
+  <!-- Step 1: Add Transactions -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-primary opacity-25">01</span>
+          <div class="p-3 bg-primary-subtle text-primary rounded-3">
+            <i class="fa-solid fa-circle-plus fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">Add Transactions</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Record your daily cash inflows and outflows. Choose Income or Expense, select the dynamic category, enter the amount, and save.
+        </p>
+        <button class="btn btn-sm btn-outline-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep1">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep1">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>How it works:</strong> The category dropdown dynamically alternates based on whether you choose Income (Salary, Freelance, etc.) or Expense (Food, Bills, etc.).</div>
+            <div class="mt-2"><a href="{{ url_for('add_transaction') }}" class="text-primary fw-semibold">Go to Add Transaction &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: View Dashboard -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-success opacity-25">02</span>
+          <div class="p-3 bg-success-subtle text-success rounded-3">
+            <i class="fa-solid fa-chart-pie fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">View Dashboard</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          The central hub of your financial portfolio. Displays total income, total expenses, net balance, and interactive Chart.js graphs.
+        </p>
+        <button class="btn btn-sm btn-outline-success w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep2">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep2">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>Features:</strong> Expense by Category donut chart, Monthly Income vs. Expense bar chart, and the 5-factor Financial Health Score Index.</div>
+            <div class="mt-2"><a href="{{ url_for('dashboard') }}" class="text-success fw-semibold">Open Dashboard &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Manage Transactions -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-info opacity-25">03</span>
+          <div class="p-3 bg-info-subtle text-info rounded-3">
+            <i class="fa-solid fa-list-check fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">Manage Transactions</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Search by keyword, filter by transaction type, category, or date range, and edit or delete records with confirmation safeguards.
+        </p>
+        <button class="btn btn-sm btn-outline-info w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep3">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep3">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>Filters:</strong> Instantly filter any combination of start date, end date, type, and keyword. Summaries update automatically in real-time.</div>
+            <div class="mt-2"><a href="{{ url_for('transactions') }}" class="text-info fw-semibold">View Transactions &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Set Budgets -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-warning opacity-25">04</span>
+          <div class="p-3 bg-warning-subtle text-warning rounded-3">
+            <i class="fa-solid fa-bullseye fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">Set Monthly Budgets</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Create monthly category budgets to control spending and receive automatic overspending alerts as you approach or exceed limits.
+        </p>
+        <button class="btn btn-sm btn-outline-warning w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep4">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep4">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>Alert Thresholds:</strong> Progress bars turn amber when spending reaches 80% and red with warning alerts if exceeded.</div>
+            <div class="mt-2"><a href="{{ url_for('budgets') }}" class="text-warning fw-semibold">Manage Budgets &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: View Analytics -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-primary opacity-25">05</span>
+          <div class="p-3 bg-primary-subtle text-primary rounded-3">
+            <i class="fa-solid fa-chart-line fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">Financial Analytics</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Powered by Pandas and NumPy. Computes category percentage shares, monthly cashflow histories, and cumulative running balances.
+        </p>
+        <button class="btn btn-sm btn-outline-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep5">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep5">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>Vectorized Math:</strong> Uses <code>np.cumsum</code> for running balances and Pandas grouping for monthly net savings.</div>
+            <div class="mt-2"><a href="{{ url_for('analytics') }}" class="text-primary fw-semibold">Explore Analytics &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: AI Insights & Health Score -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-danger opacity-25">06</span>
+          <div class="p-3 bg-danger-subtle text-danger rounded-3">
+            <i class="fa-solid fa-brain fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">AI Insights & Forecasting</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Scikit-Learn Machine Learning forecasts next month's expenses, detects statistical anomalies (Z-Score & IQR), and calculates your Health Score.
+        </p>
+        <button class="btn btn-sm btn-outline-danger w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep6">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep6">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>ML Regression:</strong> Evaluates model \( R^2 \) confidence and plots a historical vs. predicted trend trajectory.</div>
+            <div class="mt-2"><a href="{{ url_for('insights') }}" class="text-danger fw-semibold">View AI Insights &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7: Import & Export Reports -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-0 transition-hover">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="display-6 fw-bold text-secondary opacity-25">07</span>
+          <div class="p-3 bg-secondary-subtle text-secondary rounded-3">
+            <i class="fa-solid fa-file-invoice-dollar fs-4"></i>
+          </div>
+        </div>
+        <h5 class="fw-bold mb-2">Import & Export</h5>
+        <p class="text-muted small mb-3 flex-grow-1">
+          Import batches of transaction records from bank statements via CSV or generate executive PDF statements and CSV exports.
+        </p>
+        <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#helpStep7">
+          Learn More <i class="fa-solid fa-chevron-down ms-1"></i>
+        </button>
+        <div class="collapse mt-3" id="helpStep7">
+          <div class="p-3 bg-light rounded border small">
+            <div><strong>PDF Statements:</strong> Uses ReportLab to generate clean executive summaries suitable for audits and personal records.</div>
+            <div class="mt-2"><a href="{{ url_for('import_csv') }}" class="text-secondary fw-semibold">Import CSV &rarr;</a> | <a href="{{ url_for('export_pdf') }}" class="text-secondary fw-semibold">Download PDF &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

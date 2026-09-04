@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - ExpenseAI{% endblock %}
+{% block header_title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pt-3">
+  <div class="col-12 col-sm-10 col-md-7 col-lg-5">
+    <div class="card shadow-md border-0">
+      <div class="card-header bg-white border-0 text-center pt-4 pb-0">
+        <div class="d-inline-flex p-3 rounded-circle bg-primary-subtle text-primary mb-2">
+          <i class="fa-solid fa-lock fs-3"></i>
+        </div>
+        <h3 class="fw-bold mb-1">Sign In to ExpenseAI</h3>
+        <p class="text-muted small">Enter your email and password to access your financial portfolio</p>
+      </div>
+
+      <div class="card-body p-4 pt-2">
+        <form method="POST" action="{{ url_for('login') }}" novalidate>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-regular fa-envelope text-muted"></i></span>
+              <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" value="{{ email or '' }}" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="password" class="form-label mb-0">Password</label>
+              <a href="{{ url_for('forgot_password') }}" class="small text-primary text-decoration-none">Forgot Password?</a>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa-solid fa-key text-muted"></i></span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me" checked>
+            <label class="form-check-label small text-muted" for="remember_me">Remember my login on this device</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In
+          </button>
+        </form>
+
+        <div class="text-center mt-4 small text-muted">
+          Don't have an account yet?
+          <a href="{{ url_for('register') }}" class="text-primary fw-semibold text-decoration-none">Create Account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

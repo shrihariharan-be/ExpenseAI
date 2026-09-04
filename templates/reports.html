@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports - Personal Expense Tracker{% endblock %}
+{% block header_title %}Financial Reports & Statements{% endblock %}
+
+{% block content %}
+<!-- Period Selection Card -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-file-invoice-dollar text-primary"></i>
+      <span>Generate Financial Report</span>
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('export_csv', start_date=report.start_date, end_date=report.end_date) }}" class="btn btn-sm btn-outline-success">
+        <i class="fa-solid fa-file-csv me-1"></i> Export Report to CSV
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('reports') }}" id="reportForm">
+      <div class="row g-3 align-items-end">
+        <!-- Preset Periods -->
+        <div class="col-12 col-md-4">
+          <label class="form-label">Select Period</label>
+          <div class="btn-group w-100" role="group" aria-label="Report Period">
+            <a href="{{ url_for('reports', period='daily') }}" class="btn btn-outline-primary {% if report.period_type == 'daily' %}active{% endif %}">Daily</a>
+            <a href="{{ url_for('reports', period='weekly') }}" class="btn btn-outline-primary {% if report.period_type == 'weekly' %}active{% endif %}">Weekly</a>
+            <a href="{{ url_for('reports', period='monthly') }}" class="btn btn-outline-primary {% if report.period_type == 'monthly' %}active{% endif %}">Monthly</a>
+            <a href="{{ url_for('reports', period='all') }}" class="btn btn-outline-primary {% if report.period_type == 'all' %}active{% endif %}">All Time</a>
+          </div>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="col-12 col-sm-6 col-md-3">
+          <label for="start_date" class="form-label">Custom Start Date</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" value="{{ report.start_date }}">
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-3">
+          <label for="end_date" class="form-label">Custom End Date</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" value="{{ report.end_date }}">
+        </div>
+
+        <div class="col-12 col-md-2">
+          <input type="hidden" name="period" value="custom">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fa-solid fa-magnifying-glass me-1"></i> Filter
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Report Summary Badges -->
+<div class="row g-3 mb-4">
+  <!-- Total Income -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-income h-100">
+      <div class="stat-title">Total Income</div>
+      <h3 class="stat-value fs-4">₹{{ "{:,.2f}".format(report.summary.total_income) }}</h3>
+      <div class="stat-subtext small text-muted">{{ report.summary.income_count }} transactions</div>
+    </div>
+  </div>
+
+  <!-- Total Expense -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-expense h-100">
+      <div class="stat-title">Total Expense</div>
+      <h3 class="stat-value fs-4">₹{{ "{:,.2f}".format(report.summary.total_expenses) }}</h3>
+      <div class="stat-subtext small text-muted">{{ report.summary.expense_count }} transactions</div>
+    </div>
+  </div>
+
+  <!-- Net Savings -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-balance h-100">
+      <div class="stat-title">Net Savings</div>
+      <h3 class="stat-value fs-4 {{ 'text-success' if report.summary.current_balance >= 0 else 'text-danger' }}">
+        {{ '+' if report.summary.current_balance >= 0 else '' }}₹{{ "{:,.2f}".format(report.summary.current_balance) }}
+      </h3>
+      <div class="stat-subtext small text-muted">Period balance</div>
+    </div>
+  </div>
+
+  <!-- Highest Spending Category -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-info h-100">
+      <div class="stat-title">Highest Spending</div>
+      <h3 class="stat-value fs-5 text-truncate" title="{{ report.summary.highest_expense_category }}">{{ report.summary.highest_expense_category }}</h3>
+      <div class="stat-subtext small text-muted">₹{{ "{:,.2f}".format(report.summary.highest_expense_amount) }}</div>
+    </div>
+  </div>
+
+  <!-- Average Daily Expense -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-warning h-100">
+      <div class="stat-title">Avg Daily Expense</div>
+      <h3 class="stat-value fs-4">₹{{ "{:,.2f}".format(report.summary.avg_daily_expense) }}</h3>
+      <div class="stat-subtext small text-muted">Average/day</div>
+    </div>
+  </div>
+
+  <!-- Number of Transactions -->
+  <div class="col-12 col-sm-6 col-xl-2">
+    <div class="stat-card stat-info h-100">
+      <div class="stat-title">Transactions</div>
+      <h3 class="stat-value fs-4">{{ report.summary.total_transactions }}</h3>
+      <div class="stat-subtext small text-muted">Total records</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Period Category Breakdown -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-pie-chart text-primary"></i>
+          <span>Period Category Distribution</span>
+        </h2>
+      </div>
+      <div class="card-body">
+        {% if report.categories %}
+          <div class="table-responsive">
+            <table class="table table-custom">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th class="text-end">Amount</th>
+                  <th class="text-end">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cat in report.categories %}
+                  <tr>
+                    <td>
+                      <span class="badge-category" style="border-left: 3px solid {{ cat.color }};">
+                        {{ cat.category }}
+                      </span>
+                    </td>
+                    <td class="text-end fw-semibold">₹{{ "{:,.2f}".format(cat.amount) }}</td>
+                    <td class="text-end">{{ cat.percentage }}%</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">No expense categories in this period.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions for Period -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-list text-primary"></i>
+          <span>Transactions In Report Period</span>
+        </h2>
+        <span class="badge bg-light text-muted border">{{ report.transactions|length }} Items</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if report.transactions %}
+                {% for tx in report.transactions %}
+                  <tr>
+                    <td class="text-muted small text-nowrap">{{ tx.date }}</td>
+                    <td>
+                      {% if tx.type == 'Income' %}
+                        <span class="badge-income"><i class="fa-solid fa-arrow-down"></i> Income</span>
+                      {% else %}
+                        <span class="badge-expense"><i class="fa-solid fa-arrow-up"></i> Expense</span>
+                      {% endif %}
+                    </td>
+                    <td><span class="badge-category">{{ tx.category }}</span></td>
+                    <td class="small">{{ tx.description or '-' }}</td>
+                    <td class="text-end fw-bold text-nowrap {{ 'amount-income' if tx.type == 'Income' else 'amount-expense' }}">
+                      {{ '+' if tx.type == 'Income' else '-' }}₹{{ "{:,.2f}".format(tx.amount) }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">No transactions found for the selected period.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

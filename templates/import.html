@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Import Transactions - Personal Expense Tracker{% endblock %}
+{% block header_title %}Data Engineering - CSV Import{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <!-- Upload Card -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-file-csv text-success"></i>
+          <span>Import Transactions From CSV</span>
+        </h2>
+        <a href="{{ url_for('download_csv_template') }}" class="btn btn-sm btn-outline-primary">
+          <i class="fa-solid fa-download me-1"></i> Download Sample CSV
+        </a>
+      </div>
+
+      <div class="card-body p-4">
+        <p class="text-muted small">
+          Easily import batch transaction records from your bank statements, spreadsheets, or financial exports.
+          Our automated validation pipeline checks each row for proper dates, valid types, and positive currency amounts.
+        </p>
+
+        <form method="POST" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label for="csv_file" class="form-label fw-bold">Select CSV File</label>
+            <input class="form-control form-control-lg" type="file" id="csv_file" name="file" accept=".csv" required>
+            <div class="form-text">File must be a UTF-8 encoded <code>.csv</code> file.</div>
+          </div>
+
+          <div class="p-3 bg-light rounded border mb-4">
+            <div class="fw-bold small text-muted text-uppercase mb-2">Expected Column Headers</div>
+            <code>Date, Type, Category, Description, Amount</code>
+            <div class="small text-muted mt-2">
+              <div>• <strong>Date:</strong> <code>YYYY-MM-DD</code> format (e.g. <code>2026-09-01</code>)</div>
+              <div>• <strong>Type:</strong> <code>Income</code> or <code>Expense</code></div>
+              <div>• <strong>Category:</strong> Must match standard predefined categories (Food, Salary, Bills, etc.)</div>
+              <div>• <strong>Amount:</strong> Positive decimal number (e.g. <code>1250.50</code>)</div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success px-4 d-flex align-items-center gap-2">
+              <i class="fa-solid fa-upload"></i>
+              <span>Upload & Import</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Import Results Report (if submitted) -->
+    {% if report %}
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+          <h2 class="card-header-title">
+            <i class="fa-solid fa-clipboard-check text-primary"></i>
+            <span>Import Execution Summary</span>
+          </h2>
+        </div>
+        <div class="card-body">
+          <div class="row g-3 text-center mb-4">
+            <div class="col-4">
+              <div class="p-3 bg-light rounded border">
+                <span class="text-muted small">TOTAL ROWS</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ report.total_rows }}</h3>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-success-subtle rounded border border-success">
+                <span class="text-success small fw-semibold">IMPORTED</span>
+                <h3 class="fw-bold mb-0 text-success">{{ report.imported_count }}</h3>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-danger-subtle rounded border border-danger">
+                <span class="text-danger small fw-semibold">FAILED</span>
+                <h3 class="fw-bold mb-0 text-danger">{{ report.failed_count }}</h3>
+              </div>
+            </div>
+          </div>
+
+          {% if report.errors %}
+            <h6 class="fw-bold text-danger mb-2">Detected Issues & Skipped Rows</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 80px;">Line #</th>
+                    <th>Error Detail</th>
+                    <th>Row Content</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for err in report.errors %}
+                    <tr>
+                      <td class="fw-bold text-danger text-center">Row {{ err.row }}</td>
+                      <td class="text-danger small">{{ err.error }}</td>
+                      <td class="small text-muted font-monospace">{{ err.data }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+
+          <div class="mt-3 text-end">
+            <a href="{{ url_for('transactions') }}" class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-list-check me-1"></i> View Imported Transactions
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

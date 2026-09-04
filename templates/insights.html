@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}AI Financial Insights - Personal Expense Tracker{% endblock %}
+{% block header_title %}AI Predictive Analytics & Insights{% endblock %}
+
+{% block content %}
+<!-- Top Header Banner -->
+<div class="row align-items-center mb-4">
+  <div class="col-12 col-md-8">
+    <div class="d-flex align-items-center gap-3">
+      <div class="p-3 bg-primary-subtle text-primary rounded-3">
+        <i class="fa-solid fa-brain fs-3"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold mb-0">AI Predictive Analytics & Financial Health</h3>
+        <p class="text-muted small mb-0">Powered by Scikit-Learn Machine Learning, Pandas & NumPy time-series modeling</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+    <span class="badge bg-primary px-3 py-2 fs-6">
+      <i class="fa-solid fa-shield-heart me-1"></i> Health: {{ insights_data.rating }} ({{ insights_data.health_score }}/100)
+    </span>
+  </div>
+</div>
+
+<!-- Financial Health Score Detailed Breakdown Card -->
+<div class="card mb-4 border-0 shadow-sm" style="background: #ffffff;">
+  <div class="card-header bg-light border-bottom">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-heart-pulse text-danger"></i>
+      <span>Financial Health Score Engine ({{ insights_data.health_score }}/100)</span>
+    </h2>
+    <span class="badge bg-primary">{{ insights_data.rating }}</span>
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-3">
+      {% if insights_data.sub_metrics %}
+        <!-- 1. Savings Rate -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="p-3 rounded border bg-light h-100">
+            <div class="text-muted small text-uppercase fw-semibold mb-1">1. Savings Rate</div>
+            <div class="d-flex align-items-baseline justify-content-between mb-2">
+              <h4 class="fw-bold text-success mb-0">{{ insights_data.sub_metrics.savings_rate.value }}</h4>
+              <span class="badge bg-success-subtle text-success">{{ insights_data.sub_metrics.savings_rate.score }}/30 pts</span>
+            </div>
+            <div class="small text-muted">Rating: <strong>{{ insights_data.sub_metrics.savings_rate.rating }}</strong></div>
+          </div>
+        </div>
+
+        <!-- 2. Budget Discipline -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="p-3 rounded border bg-light h-100">
+            <div class="text-muted small text-uppercase fw-semibold mb-1">2. Budget Adherence</div>
+            <div class="d-flex align-items-baseline justify-content-between mb-2">
+              <h4 class="fw-bold text-primary mb-0">{{ insights_data.sub_metrics.budget_discipline.value }}</h4>
+              <span class="badge bg-primary-subtle text-primary">{{ insights_data.sub_metrics.budget_discipline.score }}/25 pts</span>
+            </div>
+            <div class="small text-muted">Discipline: <strong>{{ insights_data.sub_metrics.budget_discipline.rating }}</strong></div>
+          </div>
+        </div>
+
+        <!-- 3. Expense Growth -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="p-3 rounded border bg-light h-100">
+            <div class="text-muted small text-uppercase fw-semibold mb-1">3. Expense Growth</div>
+            <div class="d-flex align-items-baseline justify-content-between mb-2">
+              <h4 class="fw-bold text-dark mb-0">{{ insights_data.sub_metrics.expense_growth.value }}</h4>
+              <span class="badge bg-secondary-subtle text-secondary">{{ insights_data.sub_metrics.expense_growth.score }}/20 pts</span>
+            </div>
+            <div class="small text-muted">Velocity: <strong>{{ insights_data.sub_metrics.expense_growth.rating }}</strong></div>
+          </div>
+        </div>
+
+        <!-- 4. Overspending Risk -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="p-3 rounded border bg-light h-100">
+            <div class="text-muted small text-uppercase fw-semibold mb-1">4. Overspending Risk</div>
+            <div class="d-flex align-items-baseline justify-content-between mb-2">
+              <h4 class="fw-bold text-warning mb-0">{{ insights_data.sub_metrics.overspending_risk.value }}</h4>
+              <span class="badge bg-warning-subtle text-warning">{{ insights_data.sub_metrics.overspending_risk.score }}/15 pts</span>
+            </div>
+            <div class="small text-muted">Exposure: <strong>{{ insights_data.sub_metrics.overspending_risk.rating }}</strong></div>
+          </div>
+        </div>
+
+        <!-- 5. Spending Consistency -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="p-3 rounded border bg-light h-100">
+            <div class="text-muted small text-uppercase fw-semibold mb-1">5. Consistency</div>
+            <div class="d-flex align-items-baseline justify-content-between mb-2">
+              <h4 class="fw-bold text-info mb-0">{{ insights_data.sub_metrics.spending_consistency.value }}</h4>
+              <span class="badge bg-info-subtle text-info">{{ insights_data.sub_metrics.spending_consistency.score }}/10 pts</span>
+            </div>
+            <div class="small text-muted">Stability: <strong>{{ insights_data.sub_metrics.spending_consistency.rating }}</strong></div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- AI Prediction Hero Card -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-7">
+    <div class="card h-100 border-primary shadow-sm" style="border-width: 2px;">
+      <div class="card-header bg-primary-subtle border-0">
+        <h2 class="card-header-title text-primary">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Machine Learning Expense Forecast</span>
+        </h2>
+        <span class="badge bg-primary">Scikit-Learn Linear Regression</span>
+      </div>
+      <div class="card-body">
+        <div class="row align-items-center mb-4">
+          <div class="col-12 col-sm-6">
+            <span class="text-muted small text-uppercase fw-semibold">Target Forecast Period</span>
+            <h4 class="fw-bold text-dark mt-1">{{ ai_prediction.target_month or 'Upcoming Month' }}</h4>
+            <div class="d-flex align-items-baseline gap-2 mt-2">
+              <span class="display-6 fw-bold text-primary">₹{{ "{:,.2f}".format(ai_prediction.predicted_total) }}</span>
+            </div>
+            <div class="mt-2 small">
+              {% if ai_prediction.trend_direction == 'increasing' %}
+                <span class="text-danger fw-semibold">
+                  <i class="fa-solid fa-arrow-trend-up me-1"></i> Up {{ ai_prediction.trend_percentage }}% vs last month
+                </span>
+              {% elif ai_prediction.trend_direction == 'decreasing' %}
+                <span class="text-success fw-semibold">
+                  <i class="fa-solid fa-arrow-trend-down me-1"></i> Down {{ ai_prediction.trend_percentage|abs }}% vs last month
+                </span>
+              {% else %}
+                <span class="text-secondary fw-semibold">
+                  <i class="fa-solid fa-minus me-1"></i> Stable spending velocity
+                </span>
+              {% endif %}
+            </div>
+            <div class="mt-2 small text-muted">
+              Predicted Monthly Savings: <strong class="text-success">₹{{ "{:,.2f}".format(ai_prediction.predicted_savings) }}</strong>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 mt-3 mt-sm-0">
+            <div class="p-3 bg-light rounded border">
+              <div class="small fw-semibold text-muted mb-2">MODEL SPECIFICATIONS & METRICS</div>
+              <div class="small mb-1"><strong>Algorithm:</strong> Scikit-learn OLS LinearRegression</div>
+              <div class="small mb-1"><strong>Confidence Score:</strong> <span class="badge bg-success">{{ ai_prediction.confidence_score }}%</span></div>
+              <div class="small mb-1"><strong>R² Coefficient:</strong> {{ ai_prediction.r2_score }}</div>
+              <div class="small"><strong>Input Samples:</strong> {{ ai_prediction.historical_months_count or 1 }} Months Trained</div>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="fw-bold text-muted small text-uppercase mb-2">Predicted Category Allocations</h6>
+        {% if ai_prediction.category_predictions %}
+          <div class="row g-2">
+            {% for cat in ai_prediction.category_predictions[:6] %}
+              <div class="col-12 col-sm-6">
+                <div class="p-2 border rounded bg-white">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-semibold">{{ cat.category }}</span>
+                    <span class="fw-bold">₹{{ "{:,.2f}".format(cat.predicted_amount) }} ({{ cat.percentage }}%)</span>
+                  </div>
+                  <div class="progress progress-thin">
+                    <div class="progress-bar" style="width: {{ cat.percentage }}%; background-color: {{ cat.color }};"></div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small">Log more multi-month transactions to generate category-level predictions.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- MoM Comparison Card -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-code-compare text-success"></i>
+          <span>Month-over-Month Comparison</span>
+        </h2>
+        {% if insights_data.mom_comparison %}
+          <span class="badge bg-light text-muted border">{{ insights_data.mom_comparison.prev_month }} vs {{ insights_data.mom_comparison.current_month }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if insights_data.mom_comparison %}
+          {% set mom = insights_data.mom_comparison %}
+          <div class="mb-3 p-3 rounded {{ 'bg-danger-subtle' if mom.expense_diff > 0 else 'bg-success-subtle' }}">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="small fw-semibold {{ 'text-danger' if mom.expense_diff > 0 else 'text-success' }}">EXPENSE DELTA</span>
+                <h4 class="fw-bold mb-0 {{ 'text-danger' if mom.expense_diff > 0 else 'text-success' }}">
+                  {{ '+' if mom.expense_diff > 0 else '' }}₹{{ "{:,.2f}".format(mom.expense_diff) }}
+                </h4>
+              </div>
+              <span class="fs-4 {{ 'text-danger' if mom.expense_diff > 0 else 'text-success' }}">
+                <i class="fa-solid {{ 'fa-arrow-trend-up' if mom.expense_diff > 0 else 'fa-arrow-trend-down' }}"></i>
+              </span>
+            </div>
+            <div class="small mt-1 {{ 'text-danger' if mom.expense_diff > 0 else 'text-success' }}">
+              {{ mom.expense_pct }}% change compared to previous month
+            </div>
+          </div>
+
+          <div class="list-group list-group-flush small">
+            <div class="list-group-item d-flex justify-content-between px-0">
+              <span class="text-muted">Current Month Inflow:</span>
+              <strong class="text-success">+₹{{ "{:,.2f}".format(mom.current_income) }}</strong>
+            </div>
+            <div class="list-group-item d-flex justify-content-between px-0">
+              <span class="text-muted">Current Month Outflow:</span>
+              <strong class="text-danger">-₹{{ "{:,.2f}".format(mom.current_expense) }}</strong>
+            </div>
+            <div class="list-group-item d-flex justify-content-between px-0">
+              <span class="text-muted">Previous Month Outflow:</span>
+              <strong class="text-muted">₹{{ "{:,.2f}".format(mom.prev_expense) }}</strong>
+            </div>
+            <div class="list-group-item d-flex justify-content-between px-0">
+              <span class="text-muted">Period Net Savings:</span>
+              <strong class="{{ 'text-success' if mom.current_savings >= 0 else 'text-danger' }}">
+                ₹{{ "{:,.2f}".format(mom.current_savings) }}
+              </strong>
+            </div>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fa-solid fa-calendar-week fs-1 mb-2 text-secondary d-block"></i>
+            <p>At least two months of transaction data are required for comparative analysis.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historical Trend vs Predicted Trend Chart Row -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-line text-primary"></i>
+          <span>Historical Spending Trend vs AI Predicted Trend</span>
+        </h2>
+        <span class="badge bg-light text-muted border">Actual vs ML Forecast Trajectory</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="historicalVsPredictedChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Smart Financial Recommendation Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-lightbulb text-warning"></i>
+          <span>Automated Financial Recommendations & Insights</span>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for item in insights_data.insights %}
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="badge bg-{{ item.type }}-subtle text-{{ item.type }} p-2 rounded">
+                    <i class="{{ item.icon }}"></i>
+                  </span>
+                  <h6 class="fw-bold mb-0">{{ item.title }}</h6>
+                </div>
+                <p class="small text-muted mb-0">{{ item.text }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Unusual Spending / Statistical Anomaly Detection Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+      <span>Statistical Anomaly & Unusual Spending Detection (Z-Score & IQR)</span>
+    </h2>
+    <span class="badge bg-danger-subtle text-danger">{{ anomalies|length }} Anomalies Flagged</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th class="text-end">Amount</th>
+            <th class="text-center">Detection Method</th>
+            <th class="text-center">Anomaly Factor</th>
+            <th>AI Statistical Explanation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if anomalies %}
+            {% for item in anomalies %}
+              <tr>
+                <td class="text-muted small text-nowrap">{{ item.date }}</td>
+                <td>
+                  <span class="badge-category" style="border-left: 3px solid {{ item.color }};">
+                    {{ item.category }}
+                  </span>
+                </td>
+                <td>{{ item.description }}</td>
+                <td class="text-end text-danger fw-bold text-nowrap">₹{{ "{:,.2f}".format(item.amount) }}</td>
+                <td class="text-center">
+                  <span class="badge bg-secondary-subtle text-secondary">{{ item.detection_method }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-danger">{{ item.multiplier }}x Average (Z={{ item.z_score }})</span>
+                </td>
+                <td class="small text-muted">{{ item.explanation }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">
+                <i class="fa-solid fa-circle-check text-success fs-2 mb-2 d-block"></i>
+                No statistical anomalies detected. Your spending follows standard Gaussian parameters!
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const trendData = {{ ai_prediction.trend_chart_data | tojson }};
+    const ctx = document.getElementById('historicalVsPredictedChart');
+
+    if (ctx && trendData.labels && trendData.labels.length > 0) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: trendData.labels,
+          datasets: [
+            {
+              label: 'Actual Historical Expense',
+              data: trendData.actual,
+              borderColor: '#2563EB',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              tension: 0.2
+            },
+            {
+              label: 'AI Predicted Trajectory',
+              data: trendData.predicted,
+              borderColor: '#F59E0B',
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              borderDash: [6, 6],
+              borderWidth: 2.5,
+              pointRadius: 6,
+              pointBackgroundColor: '#F59E0B',
+              pointHoverRadius: 8,
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                callback: function (val) {
+                  return '₹' + (val >= 1000 ? (val / 1000) + 'k' : val);
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const val = context.parsed.y;
+                  return ` ${context.dataset.label}: ${formatCurrency(val)}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

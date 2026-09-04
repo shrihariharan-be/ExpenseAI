@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code or 'Error' }} - ExpenseAI{% endblock %}
+{% block header_title %}{{ error_title or 'Application Error' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="card p-4 p-md-5 shadow-sm border-0">
+      <div class="mb-4">
+        <div class="d-inline-flex p-4 rounded-circle bg-danger-subtle text-danger mb-3">
+          {% if error_code == 404 %}
+            <i class="fa-solid fa-compass-slash fs-1"></i>
+          {% elif error_code == 403 or error_code == 401 %}
+            <i class="fa-solid fa-lock fs-1"></i>
+          {% elif error_code == 429 %}
+            <i class="fa-solid fa-gauge-simple-high fs-1"></i>
+          {% else %}
+            <i class="fa-solid fa-triangle-exclamation fs-1"></i>
+          {% endif %}
+        </div>
+        <h1 class="display-5 fw-bold text-dark mb-2">{{ error_code or 'Error' }}</h1>
+        <h3 class="fw-semibold mb-2">{{ error_title or 'An unexpected error occurred' }}</h3>
+        <p class="text-muted">
+          {{ error_message or 'The request could not be completed. Please verify the URL or return to your financial dashboard.' }}
+        </p>
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-4 py-2">
+          <i class="fa-solid fa-house me-2"></i> Return to Dashboard
+        </a>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2" onclick="window.history.back();">
+          <i class="fa-solid fa-arrow-left me-2"></i> Go Back
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

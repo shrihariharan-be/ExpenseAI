@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Management - Personal Expense Tracker{% endblock %}
+{% block header_title %}Monthly Budget Planner{% endblock %}
+
+{% block content %}
+<!-- Top Header & Month Filter Row -->
+<div class="row align-items-center mb-4 g-3">
+  <div class="col-12 col-md-6">
+    <h3 class="fw-bold mb-1">
+      <i class="fa-solid fa-bullseye text-primary me-2"></i>{{ budget_data.month_label }} Budgets
+    </h3>
+    <p class="text-muted small mb-0">Set spending thresholds, monitor burn rates, and prevent overspending</p>
+  </div>
+  <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+    <form method="GET" action="{{ url_for('budgets') }}" class="d-flex gap-2">
+      <input type="month" class="form-control form-control-sm" name="month" value="{{ budget_data.month_year }}" onchange="this.form.submit()">
+    </form>
+    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#budgetModal">
+      <i class="fa-solid fa-plus me-1"></i> Set Category Budget
+    </button>
+  </div>
+</div>
+
+<!-- Alerts Container -->
+{% if budget_data.alerts %}
+  <div class="mb-4">
+    {% for alert in budget_data.alerts %}
+      <div class="alert alert-{{ alert.type }} alert-dismissible fade show" role="alert">
+        <i class="fa-solid {{ 'fa-circle-exclamation' if alert.type == 'danger' else 'fa-triangle-exclamation' }} me-2"></i>
+        <span>{{ alert.message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Overall Budget Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-balance h-100">
+      <div class="stat-title">Total Allocated Budget</div>
+      <h3 class="stat-value fs-4">₹{{ "{:,.2f}".format(budget_data.total_budget) }}</h3>
+      <div class="stat-subtext small text-muted">Across {{ budget_data.categories|length }} categories</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-expense h-100">
+      <div class="stat-title">Actual Total Spent</div>
+      <h3 class="stat-value fs-4">₹{{ "{:,.2f}".format(budget_data.total_spent) }}</h3>
+      <div class="stat-subtext small text-muted">{{ budget_data.overall_percentage }}% utilized</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-income h-100">
+      <div class="stat-title">Remaining Allowance</div>
+      <h3 class="stat-value fs-4 {{ 'text-success' if budget_data.total_remaining >= 0 else 'text-danger' }}">
+        {{ '+' if budget_data.total_remaining >= 0 else '' }}₹{{ "{:,.2f}".format(budget_data.total_remaining) }}
+      </h3>
+      <div class="stat-subtext small text-muted">Left to spend safely</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-warning h-100">
+      <div class="stat-title">Budget Discipline</div>
+      <h3 class="stat-value fs-4">
+        {% if budget_data.total_remaining >= 0 %}
+          On Track ✅
+        {% else %}
+          Overbudget ⚠️
+        {% endif %}
+      </h3>
+      <div class="stat-subtext small text-muted">{{ budget_data.month_label }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Comparison Chart & Category Progress -->
+<div class="row g-3 mb-4">
+  <!-- Budget vs Actual Chart -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-column text-primary"></i>
+          <span>Budget vs Actual Spent (₹)</span>
+        </h2>
+        <span class="badge bg-light text-muted border">{{ budget_data.month_label }}</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="budgetCompareChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Progress Overview -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-gauge-high text-success"></i>
+          <span>Overall Budget Utilization</span>
+        </h2>
+      </div>
+      <div class="card-body d-flex flex-column justify-content-center">
+        <div class="text-center mb-3">
+          <h1 class="display-5 fw-bold {{ 'text-danger' if budget_data.overall_percentage >= 100 else ('text-warning' if budget_data.overall_percentage >= 75 else 'text-primary') }}">
+            {{ budget_data.overall_percentage }}%
+          </h1>
+          <p class="text-muted small">Total Monthly Budget Spent</p>
+        </div>
+
+        <div class="progress mb-4" style="height: 16px;">
+          <div class="progress-bar {{ 'bg-danger' if budget_data.overall_percentage >= 100 else ('bg-warning' if budget_data.overall_percentage >= 75 else 'bg-primary') }}"
+               role="progressbar"
+               style="width: {{ budget_data.overall_percentage }}%;"
+               aria-valuenow="{{ budget_data.overall_percentage }}"
+               aria-valuemin="0"
+               aria-valuemax="100"></div>
+        </div>
+
+        <div class="p-3 bg-light rounded border small">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Total Budget:</span>
+            <strong class="text-dark">₹{{ "{:,.2f}".format(budget_data.total_budget) }}</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span>Total Spent:</span>
+            <strong class="text-danger">₹{{ "{:,.2f}".format(budget_data.total_spent) }}</strong>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between">
+            <span>Remaining:</span>
+            <strong class="{{ 'text-success' if budget_data.total_remaining >= 0 else 'text-danger' }}">
+              ₹{{ "{:,.2f}".format(budget_data.total_remaining) }}
+            </strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Category Budgets Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-layer-group text-primary"></i>
+      <span>Category Budget Breakdown</span>
+    </h2>
+    <span class="text-muted small">{{ budget_data.categories|length }} categories configured</span>
+  </div>
+
+  <div class="card-body p-0">
+    <!-- Desktop Table (Screens >= 768px) -->
+    <div class="table-responsive d-none d-md-block">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="text-end">Monthly Budget</th>
+            <th class="text-end">Actual Spent</th>
+            <th class="text-end">Remaining</th>
+            <th style="width: 25%;">Progress</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if budget_data.categories %}
+            {% for item in budget_data.categories %}
+              <tr>
+                <td>
+                  <span class="badge-category" style="border-left: 3px solid {{ item.color }};">
+                    {{ item.category }}
+                  </span>
+                </td>
+                <td class="text-end fw-semibold">₹{{ "{:,.2f}".format(item.budget) }}</td>
+                <td class="text-end fw-bold {{ 'text-danger' if item.status == 'exceeded' else 'text-dark' }}">
+                  ₹{{ "{:,.2f}".format(item.spent) }}
+                </td>
+                <td class="text-end fw-bold {{ 'text-danger' if item.remaining < 0 else 'text-success' }}">
+                  {{ '+' if item.remaining >= 0 else '' }}₹{{ "{:,.2f}".format(item.remaining) }}
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress progress-thin flex-grow-1">
+                      <div class="progress-bar {{ 'bg-danger' if item.status == 'exceeded' else ('bg-warning' if item.status == 'warning' else 'bg-success') }}"
+                           role="progressbar"
+                           style="width: {{ item.percentage }}%;"
+                           aria-valuenow="{{ item.percentage }}"
+                           aria-valuemin="0"
+                           aria-valuemax="100"></div>
+                    </div>
+                    <span class="small fw-semibold text-muted text-nowrap" style="min-width: 45px;">{{ item.raw_percentage }}%</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  {% if item.status == 'exceeded' %}
+                    <span class="badge bg-danger">Overbudget</span>
+                  {% elif item.status == 'warning' %}
+                    <span class="badge bg-warning text-dark">Warning (80%+)</span>
+                  {% else %}
+                    <span class="badge bg-success-subtle text-success">Safe</span>
+                  {% endif %}
+                </td>
+                <td class="text-center text-nowrap">
+                  <button type="button" class="btn btn-outline-primary btn-action" title="Edit Budget"
+                          onclick="openEditBudgetModal('{{ item.category }}', '{{ item.budget }}')">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <form method="POST" action="{{ url_for('delete_budget', id=item.id) }}" class="d-inline" onsubmit="return confirm('Delete budget for {{ item.category }}?');">
+                    <button type="submit" class="btn btn-outline-danger btn-action" title="Delete">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-bullseye fs-1 mb-2 text-secondary d-block"></i>
+                <h5>No Budgets Set For This Month</h5>
+                <p>Click below to set your first category budget.</p>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#budgetModal">
+                  <i class="fa-solid fa-plus me-1"></i> Add Category Budget
+                </button>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card Stream (Phones < 768px) -->
+    <div class="d-md-none mobile-card-stream">
+      {% if budget_data.categories %}
+        {% for item in budget_data.categories %}
+          <div class="mobile-tx-card">
+            <div class="mobile-tx-header">
+              <span class="badge-category" style="border-left: 3px solid {{ item.color }};">{{ item.category }}</span>
+              {% if item.status == 'exceeded' %}
+                <span class="badge bg-danger">Overbudget</span>
+              {% elif item.status == 'warning' %}
+                <span class="badge bg-warning text-dark">{{ item.raw_percentage }}%</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success">Safe ({{ item.raw_percentage }}%)</span>
+              {% endif %}
+            </div>
+            <div class="my-2">
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar {{ 'bg-danger' if item.status == 'exceeded' else ('bg-warning' if item.status == 'warning' else 'bg-success') }}"
+                     role="progressbar" style="width: {{ item.percentage }}%;"></div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <div>Spent: <strong class="{{ 'text-danger' if item.status == 'exceeded' else 'text-dark' }}">₹{{ "{:,.2f}".format(item.spent) }}</strong></div>
+              <div>Limit: <strong class="text-dark">₹{{ "{:,.2f}".format(item.budget) }}</strong></div>
+            </div>
+            <div class="mobile-tx-footer mt-1">
+              <div>Remaining: <strong class="{{ 'text-danger' if item.remaining < 0 else 'text-success' }}">₹{{ "{:,.2f}".format(item.remaining) }}</strong></div>
+              <div class="d-flex gap-1">
+                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Budget"
+                        onclick="openEditBudgetModal('{{ item.category }}', '{{ item.budget }}')">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <form method="POST" action="{{ url_for('delete_budget', id=item.id) }}" class="d-inline" onsubmit="return confirm('Delete budget for {{ item.category }}?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state py-4 text-center">
+          <i class="fa-solid fa-bullseye empty-state-icon"></i>
+          <h6>No Budgets Configured</h6>
+          <p class="small text-muted">Configure monthly thresholds to receive overspending alerts.</p>
+          <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#budgetModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Category Budget
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Budget Modal -->
+<div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('budgets') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="budgetModalLabel">
+            <i class="fa-solid fa-bullseye text-primary me-2"></i>Set Category Budget
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="modalMonth" class="form-label">Month & Year</label>
+            <input type="month" class="form-control" id="modalMonth" name="month_year" value="{{ budget_data.month_year }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="modalCategory" class="form-label">Expense Category</label>
+            <select class="form-select" id="modalCategory" name="category" required>
+              <option value="" disabled selected>Select category...</option>
+              {% for cat in expense_categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="modalBudget" class="form-label">Monthly Limit (₹)</label>
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" step="100" min="100" class="form-control" id="modalBudget" name="monthly_budget" placeholder="5000" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openEditBudgetModal(category, currentBudget) {
+    const catSelect = document.getElementById('modalCategory');
+    const budgetInput = document.getElementById('modalBudget');
+    catSelect.value = category;
+    budgetInput.value = currentBudget;
+    const modal = new bootstrap.Modal(document.getElementById('budgetModal'));
+    modal.show();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const categories = {{ budget_data.categories | tojson }};
+    const labels = categories.map(c => c.category);
+    const budgets = categories.map(c => c.budget);
+    const spents = categories.map(c => c.spent);
+
+    const ctx = document.getElementById('budgetCompareChart');
+    if (ctx && labels.length > 0) {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Allocated Budget',
+              data: budgets,
+              backgroundColor: '#94A3B8',
+              borderRadius: 6,
+              barPercentage: 0.6
+            },
+            {
+              label: 'Actual Spent',
+              data: spents,
+              backgroundColor: function (context) {
+                const idx = context.dataIndex;
+                const cat = categories[idx];
+                return (cat && cat.status === 'exceeded') ? '#DC2626' : '#2563EB';
+              },
+              borderRadius: 6,
+              barPercentage: 0.6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                callback: function (val) {
+                  return '₹' + (val >= 1000 ? (val / 1000) + 'k' : val);
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  return ` ${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

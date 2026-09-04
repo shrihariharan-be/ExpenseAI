@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#accent)" stroke-width="16" stroke-dasharray="24 12"/>
+  <!-- Wallet / Brain Icon -->
+  <path d="M160 176h192c17.67 0 32 14.33 32 32v128c0 17.67-14.33 32-32 32H160c-17.67 0-32-14.33-32-32V208c0-17.67 14.33-32 32-32z" fill="url(#accent)"/>
+  <path d="M336 240h48v32h-48a16 16 0 0 1 0-32z" fill="#ffffff"/>
+  <circle cx="336" cy="256" r="6" fill="#1e293b"/>
+  <text x="256" y="440" text-anchor="middle" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="36" font-weight="bold" letter-spacing="4">EXPENSEAI</text>
+</svg>

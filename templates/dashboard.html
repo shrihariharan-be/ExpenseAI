@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Personal Expense Tracker{% endblock %}
+{% block header_title %}Financial Overview{% endblock %}
+
+{% block content %}
+{% if not data.onboarding_completed %}
+<!-- First-Time User Onboarding Hero Card -->
+<div class="card mb-4 border-0 shadow-sm" id="onboardingCard" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #fff;">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <span class="badge bg-white text-primary fw-bold px-3 py-1 mb-2">Welcome Onboarding</span>
+        <h3 class="fw-bold text-white mb-1">Welcome to ExpenseAI 👋</h3>
+        <p class="text-white-50 mb-0">Let's get started managing your finances in 3 simple steps.</p>
+      </div>
+      <button type="button" class="btn-close btn-close-white" id="dismissOnboardingBtn" aria-label="Close"></button>
+    </div>
+
+    <div class="row g-3 my-2">
+      <!-- Step 1 -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-white text-primary rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+            <h6 class="fw-bold text-white mb-0">Add First Transaction</h6>
+          </div>
+          <p class="text-white-50 small mb-2">Record your current income or recent expenses to initiate analytics.</p>
+          <a href="{{ url_for('add_transaction') }}" class="btn btn-sm btn-light fw-semibold text-primary py-1 px-2.5">
+            <i class="fa-solid fa-plus me-1"></i> Add Record
+          </a>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-white text-primary rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">2</span>
+            <h6 class="fw-bold text-white mb-0">Set Monthly Budget</h6>
+          </div>
+          <p class="text-white-50 small mb-2">Define category limits (Food, Shopping, Bills) to control spending.</p>
+          <a href="{{ url_for('budgets') }}" class="btn btn-sm btn-light fw-semibold text-primary py-1 px-2.5">
+            <i class="fa-solid fa-bullseye me-1"></i> Set Limits
+          </a>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="col-12 col-md-4">
+        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-white text-primary rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+            <h6 class="fw-bold text-white mb-0">Explore AI Insights</h6>
+          </div>
+          <p class="text-white-50 small mb-2">Unlock Scikit-Learn forecasts, anomaly detection, and health score.</p>
+          <a href="{{ url_for('insights') }}" class="btn btn-sm btn-light fw-semibold text-primary py-1 px-2.5">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> View Insights
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end mt-3">
+      <button class="btn btn-light text-primary fw-bold px-4 py-2" id="completeOnboardingBtn">
+        Get Started <i class="fa-solid fa-arrow-right ms-1"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- AI Financial Health Score & Prediction Hero Banner -->
+<div class="card mb-4 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+  <div class="card-body p-4">
+    <div class="row align-items-center g-3">
+      <!-- Left: Financial Health Score -->
+      <div class="col-12 col-lg-7">
+        <div class="d-flex align-items-center gap-3">
+          <div class="position-relative d-inline-flex align-items-center justify-content-center p-3 rounded-circle"
+               style="width: 75px; height: 75px; background: rgba(37, 99, 235, 0.2); border: 3px solid #3b82f6;">
+            <span class="fs-4 fw-bold text-white">{{ data.health_score or 85 }}</span>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-primary px-2.5 py-1">AI Health Index</span>
+              <span class="text-white-50 small">{{ data.health_rating or 'Good 👍' }}</span>
+            </div>
+            <h4 class="fw-bold text-white mb-1">Financial Health Score: {{ data.health_score or 85 }}/100</h4>
+            <p class="text-white-50 small mb-0">
+              Evaluated across Savings Rate, Budget Discipline, Expense Growth, and Spending Consistency.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: AI Next Month Forecast Callout -->
+      <div class="col-12 col-lg-5 text-lg-end">
+        <div class="d-inline-block text-lg-end p-3 rounded-3" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div class="small text-white-50 text-uppercase fw-semibold mb-1">
+            <i class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i>
+            {{ data.ai_prediction.target_month or 'Upcoming Month' }} AI Forecast
+          </div>
+          <div class="fs-4 fw-bold text-white">
+            ₹{{ "{:,.2f}".format(data.ai_prediction.predicted_total or 0) }}
+          </div>
+          <div class="d-flex align-items-center justify-content-lg-end gap-2 mt-1">
+            <span class="badge {{ 'bg-danger' if data.ai_prediction.trend_direction == 'increasing' else 'bg-success' }}">
+              {{ data.ai_prediction.trend_direction|capitalize }} ({{ data.ai_prediction.trend_percentage }}%)
+            </span>
+            <a href="{{ url_for('insights') }}" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.75rem;">
+              View AI Analysis <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Metrics Row -->
+<div class="row g-3 mb-4">
+  <!-- Current Balance -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-balance">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Current Balance</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(data.summary.current_balance) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Net Financial Standing</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Income -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-income">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Total Income</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(data.summary.total_income) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            <span>{{ data.summary.income_count }} Income Transactions</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-circle-arrow-down"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Expenses -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-expense">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Total Expenses</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(data.summary.total_expenses) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+            <span>{{ data.summary.expense_count }} Expense Transactions</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-circle-arrow-up"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Income -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-income">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">This Month's Income</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(data.monthly_income) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Current Month Earnings</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-money-bill-trend-up"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Expenses -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-expense">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">This Month's Expenses</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(data.monthly_expenses) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-credit-card"></i>
+            <span>Current Month Spending</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-money-bill-transfer"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Transactions -->
+  <div class="col-12 col-sm-6 col-xl-4">
+    <div class="stat-card stat-info">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Total Transactions</div>
+          <h2 class="stat-value">{{ data.summary.total_transactions }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-receipt"></i>
+            <span>All recorded logs</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-list-ol"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 1: Category Spending & Monthly Income vs Expense -->
+<div class="row g-3 mb-4">
+  <!-- Expense by Category Donut Chart -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-pie text-primary"></i>
+          <span>Expense by Category</span>
+        </h2>
+        <a href="{{ url_for('analytics') }}" class="btn btn-sm btn-outline-secondary">Details</a>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="categoryPieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Income vs Expense Bar Chart -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-column text-success"></i>
+          <span>Monthly Income vs Expense</span>
+        </h2>
+        <span class="badge bg-light text-muted border">Monthly History</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="monthlyBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row 2: Spending Trend Line Chart -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-line text-warning"></i>
+          <span>Spending Trend (Daily & Cumulative)</span>
+        </h2>
+        <span class="text-muted small">Tracking expense velocity across time</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 280px;">
+          <canvas id="spendingTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Transactions Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-clock-rotate-left text-primary"></i>
+      <span>Recent Transactions</span>
+    </h2>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-primary">View All Transactions</a>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th class="text-end">Amount</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if data.recent_transactions %}
+            {% for tx in data.recent_transactions %}
+              <tr>
+                <td class="text-muted"><i class="fa-regular fa-calendar me-1"></i>{{ tx.date }}</td>
+                <td>
+                  {% if tx.type == 'Income' %}
+                    <span class="badge-income"><i class="fa-solid fa-arrow-down"></i> Income</span>
+                  {% else %}
+                    <span class="badge-expense"><i class="fa-solid fa-arrow-up"></i> Expense</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge-category">{{ tx.category }}</span>
+                </td>
+                <td>{{ tx.description or '-' }}</td>
+                <td class="text-end">
+                  <span class="{{ 'amount-income' if tx.type == 'Income' else 'amount-expense' }}">
+                    {{ '+' if tx.type == 'Income' else '-' }}₹{{ "{:,.2f}".format(tx.amount) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <a href="{{ url_for('edit_transaction', id=tx.id) }}" class="btn btn-outline-secondary btn-action" title="Edit">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                <i class="fa-solid fa-receipt fs-2 mb-2 d-block text-secondary"></i>
+                No transactions recorded yet. <a href="{{ url_for('add_transaction') }}">Add your first transaction</a>!
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Inject server-rendered JSON directly for maximum speed and zero flicker
+    const categoryLabels = {{ data.category_chart.labels | tojson }};
+    const categoryValues = {{ data.category_chart.data | tojson }};
+    const categoryColors = {{ data.category_chart.colors | tojson }};
+
+    const monthlyLabels = {{ data.monthly_chart.labels | tojson }};
+    const monthlyIncome = {{ data.monthly_chart.income | tojson }};
+    const monthlyExpenses = {{ data.monthly_chart.expenses | tojson }};
+
+    const trendDates = {{ data.spending_trend.dates | tojson }};
+    const trendDaily = {{ data.spending_trend.daily_expenses | tojson }};
+    const trendCumulative = {{ data.spending_trend.cumulative_expenses | tojson }};
+
+    // 1. Render Category Donut Chart
+    renderCategoryPieChart('categoryPieChart', categoryLabels, categoryValues, categoryColors);
+
+    // 2. Render Monthly Bar Chart
+    renderMonthlyBarChart('monthlyBarChart', monthlyLabels, monthlyIncome, monthlyExpenses);
+
+    // 3. Render Spending Trend Line Chart
+    renderSpendingTrendChart('spendingTrendChart', trendDates, trendDaily, trendCumulative);
+
+    // 4. Onboarding Complete Handlers
+    const completeBtn = document.getElementById('completeOnboardingBtn');
+    const dismissBtn = document.getElementById('dismissOnboardingBtn');
+    const onboardingCard = document.getElementById('onboardingCard');
+
+    function dismissOnboarding() {
+      if (onboardingCard) {
+        onboardingCard.style.display = 'none';
+      }
+      fetch('/api/onboarding/complete', { method: 'POST' });
+    }
+
+    if (completeBtn) completeBtn.addEventListener('click', dismissOnboarding);
+    if (dismissBtn) dismissBtn.addEventListener('click', dismissOnboarding);
+  });
+</script>
+{% endblock %}

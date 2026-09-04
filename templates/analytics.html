@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Analytics - Personal Expense Tracker{% endblock %}
+{% block header_title %}Financial Analytics{% endblock %}
+
+{% block content %}
+<!-- Financial Summary Cards -->
+<div class="row g-3 mb-4">
+  <!-- Total Income -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-income h-100">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Total Income</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(summary.total_income) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            <span>{{ summary.income_count }} logs</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Expenses -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-expense h-100">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Total Expenses</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(summary.total_expenses) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+            <span>{{ summary.expense_count }} logs</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-credit-card"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Balance -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-balance h-100">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Current Balance</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(summary.current_balance) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Net Remaining</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-piggy-bank"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Average Daily Expense -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-warning h-100">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Avg Daily Expense</div>
+          <h2 class="stat-value">₹{{ "{:,.2f}".format(summary.avg_daily_expense) }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-calculator"></i>
+            <span>Calculated over date span</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-chart-simple"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Highest Expense Category -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-info h-100">
+      <div class="stat-card-inner">
+        <div>
+          <div class="stat-title">Highest Spending</div>
+          <h2 class="stat-value fs-4 text-truncate" style="max-width: 140px;">{{ summary.highest_expense_category }}</h2>
+          <div class="stat-subtext">
+            <i class="fa-solid fa-fire text-danger"></i>
+            <span>₹{{ "{:,.2f}".format(summary.highest_expense_amount) }}</span>
+          </div>
+        </div>
+        <div class="stat-icon-wrapper">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Charts Row -->
+<div class="row g-3 mb-4">
+  <!-- Category Spending Pie Chart -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-pie text-primary"></i>
+          <span>Category Spending Breakdown</span>
+        </h2>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="analyticsCategoryPieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Expenses Bar Chart -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-column text-danger"></i>
+          <span>Monthly Expenses Bar Chart</span>
+        </h2>
+        <span class="text-muted small">Month over Month</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="analyticsMonthlyBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Income vs Expense Line Chart -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-chart-line text-success"></i>
+          <span>Income vs Expense & Savings Trend</span>
+        </h2>
+        <span class="text-muted small">Timeline tracking comparison</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="analyticsIncomeVsExpenseLineChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analytical Tables Row -->
+<div class="row g-3">
+  <!-- Category Analysis Table -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-table text-primary"></i>
+          <span>Category Analysis</span>
+        </h2>
+        <span class="badge bg-light text-muted border">Spending Distribution</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th class="text-end">Amount</th>
+                <th style="width: 40%;">Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if category_analysis %}
+                {% for item in category_analysis %}
+                  <tr>
+                    <td>
+                      <span class="badge-category" style="border-left: 4px solid {{ item.color }};">
+                        {{ item.category }}
+                      </span>
+                    </td>
+                    <td class="text-end fw-bold">₹{{ "{:,.2f}".format(item.amount) }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress progress-thin flex-grow-1">
+                          <div class="progress-bar" role="progressbar" style="width: {{ item.percentage }}%; background-color: {{ item.color }};" aria-valuenow="{{ item.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="small fw-semibold text-muted text-nowrap" style="min-width: 48px;">{{ item.percentage }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="text-center py-4 text-muted">No category data available.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Analysis Table -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h2 class="card-header-title">
+          <i class="fa-solid fa-calendar-days text-success"></i>
+          <span>Monthly Analysis</span>
+        </h2>
+        <span class="badge bg-light text-muted border">Cashflow History</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th class="text-end">Income</th>
+                <th class="text-end">Expense</th>
+                <th class="text-end">Savings</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if monthly_analysis %}
+                {% for item in monthly_analysis %}
+                  <tr>
+                    <td class="fw-semibold text-muted"><i class="fa-regular fa-calendar-check me-1"></i>{{ item.month_label }}</td>
+                    <td class="text-end amount-income">+₹{{ "{:,.2f}".format(item.income) }}</td>
+                    <td class="text-end amount-expense">-₹{{ "{:,.2f}".format(item.expense) }}</td>
+                    <td class="text-end fw-bold {{ 'text-success' if item.savings >= 0 else 'text-danger' }}">
+                      {{ '+' if item.savings >= 0 else '' }}₹{{ "{:,.2f}".format(item.savings) }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">No monthly data available.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const categoryAnalysis = {{ category_analysis | tojson }};
+    const monthlyAnalysis = {{ monthly_analysis | tojson }};
+
+    // 1. Category Pie Chart
+    const catLabels = categoryAnalysis.map(c => c.category);
+    const catAmounts = categoryAnalysis.map(c => c.amount);
+    const catColors = categoryAnalysis.map(c => c.color);
+    renderCategoryPieChart('analyticsCategoryPieChart', catLabels, catAmounts, catColors);
+
+    // 2. Monthly Expenses Bar Chart
+    const monthLabels = monthlyAnalysis.map(m => m.month_label);
+    const monthExpenses = monthlyAnalysis.map(m => m.expense);
+    const ctxBar = document.getElementById('analyticsMonthlyBarChart');
+    if (ctxBar && monthLabels.length > 0) {
+      new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Monthly Expenses',
+            data: monthExpenses,
+            backgroundColor: '#DC2626',
+            borderRadius: 6,
+            barPercentage: 0.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                callback: function(val) {
+                  return '₹' + (val >= 1000 ? (val / 1000) + 'k' : val);
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  return ' Expense: ' + formatCurrency(ctx.parsed.y);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Income vs Expense Line Chart with Savings
+    const monthIncomes = monthlyAnalysis.map(m => m.income);
+    const monthSavings = monthlyAnalysis.map(m => m.savings);
+    renderIncomeVsExpenseLineChart('analyticsIncomeVsExpenseLineChart', monthLabels, monthIncomes, monthExpenses, monthSavings);
+  });
+</script>
+{% endblock %}

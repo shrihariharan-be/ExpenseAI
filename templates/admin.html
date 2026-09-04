@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - ExpenseAI{% endblock %}
+{% block header_title %}Administrator Control Panel{% endblock %}
+
+{% block content %}
+<!-- Admin Alert & Header Banner -->
+<div class="card mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="p-3 rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+          <i class="fa-solid fa-shield-halved fs-3"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-danger">Superadmin Access</span>
+            <span class="text-white-50 small">System Role-Based Management</span>
+          </div>
+          <h3 class="fw-bold text-white mb-0">ExpenseAI Administration Center</h3>
+        </div>
+      </div>
+      <div>
+        <span class="badge bg-light text-dark px-3 py-2">
+          <i class="fa-solid fa-server text-success me-1"></i> SQLite Engine Active
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- System KPI Cards -->
+<div class="row g-3 mb-4">
+  <!-- Total Users -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-info h-100">
+      <div class="stat-title">Total Users</div>
+      <h3 class="stat-value fs-3">{{ system_stats.total_users }}</h3>
+      <div class="stat-subtext small text-muted">Registered accounts</div>
+    </div>
+  </div>
+
+  <!-- Active Users (Last 30 Days) -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-balance h-100">
+      <div class="stat-title">Active Users (30d)</div>
+      <h3 class="stat-value fs-3 text-primary">{{ system_stats.active_users }}</h3>
+      <div class="stat-subtext small text-muted">Logged in past 30 days</div>
+    </div>
+  </div>
+
+  <!-- Total Transactions -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-warning h-100">
+      <div class="stat-title">Total Transactions</div>
+      <h3 class="stat-value fs-3 text-dark">{{ system_stats.total_transactions }}</h3>
+      <div class="stat-subtext small text-muted">System-wide logs</div>
+    </div>
+  </div>
+
+  <!-- System Total Inflow -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-income h-100">
+      <div class="stat-title">System Inflow</div>
+      <h3 class="stat-value fs-4 text-success">+₹{{ "{:,.0f}".format(system_stats.total_income) }}</h3>
+      <div class="stat-subtext small text-muted">Recorded revenue</div>
+    </div>
+  </div>
+
+  <!-- System Total Outflow -->
+  <div class="col-12 col-sm-6 col-xl">
+    <div class="stat-card stat-expense h-100">
+      <div class="stat-title">System Outflow</div>
+      <h3 class="stat-value fs-4 text-danger">-₹{{ "{:,.0f}".format(system_stats.total_expenses) }}</h3>
+      <div class="stat-subtext small text-muted">Recorded expenditure</div>
+    </div>
+  </div>
+</div>
+
+<!-- User Management Table Section -->
+<div class="card" id="userManagement">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h2 class="card-header-title">
+      <i class="fa-solid fa-users-gear text-primary"></i>
+      <span>User Management & Access Control</span>
+    </h2>
+    <div class="d-flex align-items-center gap-2">
+      <input type="text" class="form-control form-control-sm" id="userSearch" placeholder="Search by name or email..." style="width: 250px;">
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-custom table-hover align-middle" id="usersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Email Address</th>
+            <th class="text-center">Role</th>
+            <th class="text-center">Joined Date</th>
+            <th class="text-center">Transactions</th>
+            <th>Last Login</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr class="user-row">
+              <td class="text-muted small">#{{ u.id }}</td>
+              <td class="fw-semibold user-name">{{ u.full_name }}</td>
+              <td class="user-email text-muted small">{{ u.email }}</td>
+              <td class="text-center">
+                {% if u.role == 'admin' %}
+                  <span class="badge bg-danger"><i class="fa-solid fa-shield-halved me-1"></i> Admin</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-dark">User</span>
+                {% endif %}
+              </td>
+              <td class="text-center text-muted small">{{ u.created_at[:10] if u.created_at else 'Recent' }}</td>
+              <td class="text-center">
+                <span class="badge bg-light text-dark border">{{ u.transaction_count }} logs</span>
+              </td>
+              <td class="text-muted small">{{ u.last_login or 'Never' }}</td>
+              <td class="text-center text-nowrap">
+                {% if u.id == current_user.id %}
+                  <span class="badge bg-light text-muted border">Current Admin</span>
+                {% elif u.email == 'admin@expenseai.com' %}
+                  <span class="badge bg-light text-muted border">System Admin</span>
+                {% else %}
+                  <button type="button" class="btn btn-outline-danger btn-action btn-sm"
+                          data-bs-toggle="modal" data-bs-target="#deleteUserModal"
+                          data-user-id="{{ u.id }}" data-user-name="{{ u.full_name }}" data-user-email="{{ u.email }}">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger" id="deleteUserModalLabel">
+          <i class="fa-solid fa-triangle-exclamation me-1"></i> Confirm User Account Deletion
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to permanently delete this user account?</p>
+        <div class="p-3 bg-light rounded border mb-2">
+          <div><strong>User:</strong> <span id="modalUserName"></span></div>
+          <div><strong>Email:</strong> <span id="modalUserEmail"></span></div>
+        </div>
+        <p class="text-danger small mb-0">This will remove all associated transactions and budgets. This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteUserForm" method="POST" action="">
+          <button type="submit" class="btn btn-danger">Delete User Permanently</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Delete Modal wiring
+    const deleteModal = document.getElementById('deleteUserModal');
+    if (deleteModal) {
+      deleteModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const userId = button.getAttribute('data-user-id');
+        const userName = button.getAttribute('data-user-name');
+        const userEmail = button.getAttribute('data-user-email');
+
+        document.getElementById('modalUserName').textContent = userName;
+        document.getElementById('modalUserEmail').textContent = userEmail;
+        document.getElementById('deleteUserForm').action = '/admin/delete-user/' + userId;
+      });
+    }
+
+    // Client-side instant user search filter
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        const query = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('.user-row');
+
+        rows.forEach(row => {
+          const name = row.querySelector('.user-name').textContent.toLowerCase();
+          const email = row.querySelector('.user-email').textContent.toLowerCase();
+          if (name.includes(query) || email.includes(query)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}
