@@ -4,10 +4,10 @@
 [![Flask 3.1](https://img.shields.io/badge/framework-Flask%203.1-black.svg)](https://palletsprojects.com/p/flask/)
 [![Scikit-Learn](https://img.shields.io/badge/AI%2FML-Scikit--Learn-orange.svg)](https://scikit-learn.org/)
 [![Pandas & NumPy](https://img.shields.io/badge/analytics-Pandas%20%7C%20NumPy-blueviolet.svg)](https://pandas.pydata.org/)
-[![CI - Pytest Suite](https://github.com/yourusername/expense-ai/actions/workflows/tests.yml/badge.svg)](https://github.com/yourusername/expense-ai/actions)
-[![Tests passing](https://img.shields.io/badge/pytest-25%20passed-success.svg)](https://docs.pytest.org/)
+[![Tests passing](https://img.shields.io/badge/pytest-41%20passed-success.svg)](https://docs.pytest.org/)
 [![Docker](https://img.shields.io/badge/container-Docker%20Ready-2496ED.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shrihariharan-be/ExpenseAI)
 
 A commercial-grade, portfolio-defining SaaS financial intelligence platform built with **Python, Flask, SQLite, Pandas, NumPy, and Scikit-Learn**. 
 
