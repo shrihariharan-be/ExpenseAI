@@ -14,8 +14,9 @@ class Config:
             raise RuntimeError("CRITICAL: SECRET_KEY environment variable must be set in production mode.")
         SECRET_KEY = 'dev-secret-key-change-in-production'
 
+    DATABASE_URL = os.environ.get('DATABASE_URL')
     DATABASE_DIR = os.path.join(BASE_DIR, 'database')
-    DATABASE_PATH = os.path.join(DATABASE_DIR, 'expense_tracker.db')
+    DATABASE_PATH = os.environ.get('SQLITE_PATH') or os.path.join(DATABASE_DIR, 'expense_tracker.db')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     EXPORT_CSV_PATH = os.path.join(DATA_DIR, 'transactions.csv')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max upload

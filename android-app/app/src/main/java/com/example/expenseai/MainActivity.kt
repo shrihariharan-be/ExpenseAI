@@ -113,80 +113,91 @@ class MainActivity : ComponentActivity() {
         cookieManager.setAcceptThirdPartyCookies(webView, true)
     }
 
+    private val isConnecting = java.util.concurrent.atomic.AtomicBoolean(false)
+
     /**
      * Startup Flow per Production Architecture:
      * 1. Hides WebView during check to prevent flashing protected content.
      * 2. Checks backend availability via /api/health with automatic progressive retry (handling Render cold starts).
-     * 3. If waking up -> shows "Server is starting. This may take a moment."
-     * 4. If healthy -> checks /api/auth/status:
+     * 3. Shows "Starting secure connection..." -> "Checking secure backend connection..."
+     * 4. If waking up -> shows "Server may take a few seconds to wake up (Attempt X of Y)..."
+     * 5. If healthy -> checks /api/auth/status:
      *    - Authenticated -> loads /dashboard
      *    - Unauthenticated / Fresh Install -> loads /login
-     * 5. If unavailable after retries -> displays friendly error view with "Retry" and "Server Settings".
+     * 6. If unavailable after retries -> displays friendly error view with "Retry" and "Server Settings".
      *    - Zero stack traces, zero blame on the user.
      */
     private fun startAppAuthFlow(baseUrl: String) {
+        if (!isConnecting.compareAndSet(false, true)) {
+            return // Already connecting
+        }
         errorContainer.visibility = View.GONE
         webView.visibility = View.INVISIBLE
         progressBar.visibility = View.VISIBLE
         loadingContainer.visibility = View.VISIBLE
-        loadingStatusText.text = "Connecting to ExpenseAI..."
+        loadingStatusText.text = "Starting secure connection..."
 
         bgExecutor.execute {
-            var isHealthy = false
-            val maxRetries = 2 // Total 3 attempts
-            var attempt = 0
+            try {
+                var isHealthy = false
+                val maxRetries = 3 // Total 4 attempts
+                var attempt = 0
 
-            while (attempt <= maxRetries && !isHealthy) {
-                attempt++
-                if (attempt > 1) {
-                    mainHandler.post {
-                        loadingStatusText.text = "Server is starting. This may take a moment."
-                    }
-                    try {
-                        Thread.sleep(3000)
-                    } catch (ignored: InterruptedException) {}
-                }
-
-                try {
-                    // Check /api/health first; also support /health as fallback
-                    var checkUrl = URL("$baseUrl/api/health")
-                    var conn = checkUrl.openConnection() as HttpURLConnection
-                    conn.connectTimeout = 8000
-                    conn.readTimeout = 8000
-                    conn.requestMethod = "GET"
-                    conn.setRequestProperty("User-Agent", "ExpenseAI-Android-App/2.0")
-
-                    var code = conn.responseCode
-                    conn.disconnect()
-
-                    if (code == 200) {
-                        isHealthy = true
-                    } else if (code == 404) {
-                        // Fallback: Check /health
-                        checkUrl = URL("$baseUrl/health")
-                        conn = checkUrl.openConnection() as HttpURLConnection
-                        conn.connectTimeout = 6000
-                        conn.readTimeout = 6000
-                        conn.requestMethod = "GET"
-                        conn.setRequestProperty("User-Agent", "ExpenseAI-Android-App/2.0")
-                        if (conn.responseCode == 200) {
-                            isHealthy = true
-                        }
-                        conn.disconnect()
-                    }
-                } catch (e: Exception) {
-                    // Timeout or connection error: retry if attempts remain
-                }
-            }
-
-            if (!isHealthy) {
                 mainHandler.post {
-                    loadingContainer.visibility = View.GONE
-                    progressBar.visibility = View.GONE
-                    showErrorView()
+                    loadingStatusText.text = "Checking secure backend connection..."
                 }
-                return@execute
-            }
+
+                while (attempt < maxRetries && !isHealthy) {
+                    attempt++
+                    if (attempt > 1) {
+                        mainHandler.post {
+                            loadingStatusText.text = "Server may take a few seconds to wake up (Attempt $attempt of $maxRetries)..."
+                        }
+                        try {
+                            Thread.sleep(3500)
+                        } catch (ignored: InterruptedException) {}
+                    }
+
+                    try {
+                        val sanitizedBase = baseUrl.trim().removeSuffix("/")
+                        var checkUrl = URL("$sanitizedBase/api/health")
+                        var conn = checkUrl.openConnection() as HttpURLConnection
+                        conn.connectTimeout = 8000
+                        conn.readTimeout = 8000
+                        conn.requestMethod = "GET"
+                        conn.setRequestProperty("User-Agent", "ExpenseAI-Android-App/2.1")
+
+                        val code = conn.responseCode
+                        conn.disconnect()
+
+                        if (code == 200) {
+                            isHealthy = true
+                        } else if (code == 404) {
+                            // Fallback: Check /health
+                            checkUrl = URL("$sanitizedBase/health")
+                            conn = checkUrl.openConnection() as HttpURLConnection
+                            conn.connectTimeout = 6000
+                            conn.readTimeout = 6000
+                            conn.requestMethod = "GET"
+                            conn.setRequestProperty("User-Agent", "ExpenseAI-Android-App/2.1")
+                            if (conn.responseCode == 200) {
+                                isHealthy = true
+                            }
+                            conn.disconnect()
+                        }
+                    } catch (e: Exception) {
+                        // Timeout or connection error: retry if attempts remain
+                    }
+                }
+
+                if (!isHealthy) {
+                    mainHandler.post {
+                        loadingContainer.visibility = View.GONE
+                        progressBar.visibility = View.GONE
+                        showErrorView("We're having trouble reaching the server. If starting from cold sleep, tap Retry or configure your address in Server Settings.")
+                    }
+                    return@execute
+                }
 
             // Backend is healthy! Now check authentication status
             mainHandler.post {
@@ -234,6 +245,8 @@ class MainActivity : ComponentActivity() {
                 progressBar.visibility = View.VISIBLE
                 webView.loadUrl(destinationUrl)
             }
+        } finally {
+            isConnecting.set(false)
         }
     }
 
@@ -469,8 +482,12 @@ class MainActivity : ComponentActivity() {
      */
     private fun validateAndSanitizeUrl(rawUrl: String): String? {
         if (rawUrl.isBlank()) return null
+        var candidate = rawUrl.trim().removeSuffix("/")
+        if (!candidate.startsWith("http://", ignoreCase = true) && !candidate.startsWith("https://", ignoreCase = true)) {
+            candidate = "https://$candidate"
+        }
         return try {
-            val uri = URI(rawUrl)
+            val uri = URI(candidate)
             val scheme = uri.scheme?.lowercase() ?: return null
             val host = uri.host ?: return null
 
